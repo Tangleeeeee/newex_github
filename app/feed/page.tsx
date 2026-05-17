@@ -25,7 +25,7 @@ interface Group {
 }
 
 export default function FeedPage() {
-  const { data: session } = useSession();
+  useSession();
   const [groupId, setGroupId] = useState("");
   const [groups, setGroups] = useState<Group[]>([]);
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -132,7 +132,7 @@ export default function FeedPage() {
         {/* 초대 코드 패널 */}
         {showInvite && currentGroup && (
           <div className="bg-navy rounded-2xl p-5 mb-6 animate-slide-up">
-            <p className="text-xs text-gray-400 mb-1">"{currentGroup.name}" 초대 코드</p>
+            <p className="text-xs text-gray-400 mb-1">&quot;{currentGroup.name}&quot; 초대 코드</p>
             <div className="flex items-center justify-between">
               <p className="font-display text-3xl font-bold text-white tracking-[0.2em]">
                 {currentGroup.inviteCode}

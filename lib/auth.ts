@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   adapter: PrismaAdapter(prisma) as any,
   session: { strategy: "jwt" },
   pages: {
@@ -57,8 +58,11 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         token.username = (user as any).username;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         token.nickname = (user as any).nickname;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         token.profileImage = (user as any).profileImage;
       }
       return token;
@@ -82,6 +86,7 @@ export const authOptions: NextAuthOptions = {
             data: {
               email: user.email!,
               username: user.email!.split("@")[0],
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               profileImage: (user as any).image ?? null,
             },
           });

@@ -10,7 +10,7 @@ const COLORS = ["#f59e0b","#1a1f36","#10b981","#3b82f6","#8b5cf6","#ef4444","#f9
 
 export default function AnnualReportPage({ params }: { params: { year: string } }) {
   const year = parseInt(params.year);
-  const [report, setReport] = useState<any>(null);
+  const [report, setReport] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     fetch(`/api/report/annual/${year}`).then((r) => r.json()).then(setReport);
@@ -56,7 +56,7 @@ export default function AnnualReportPage({ params }: { params: { year: string } 
                 <LineChart data={report.monthlyAvgs} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                   <XAxis dataKey="month" tickFormatter={(v) => `${v}월`} tick={{ fontSize: 11 }} />
                   <YAxis domain={[0, 5]} tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(v: any) => (typeof v === "number" ? v.toFixed(1) : v)} />
+                  <Tooltip formatter={(v: number | string) => (typeof v === "number" ? v.toFixed(1) : v)} />
                   <Line type="monotone" dataKey="avg" stroke="#f59e0b" strokeWidth={2} dot={{ fill: "#f59e0b", r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
@@ -90,7 +90,7 @@ export default function AnnualReportPage({ params }: { params: { year: string } 
               <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
                 <h2 className="font-semibold text-navy mb-4">🏆 월별 명예의 전당</h2>
                 <div className="space-y-4">
-                  {report.monthlyHallOfFames.map((hof: any) => (
+                  {(report.monthlyHallOfFames as Record<string, unknown>[]).map((hof) => (
                     <div key={hof.id}>
                       <p className="text-xs font-semibold text-gray-400 mb-2">{hof.month}월</p>
                       <div className="grid grid-cols-2 gap-2">

@@ -1,5 +1,5 @@
 import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
-import { toZonedTime, fromZonedTime } from "date-fns-tz";
+import { toZonedTime } from "date-fns-tz";
 
 const KST = "Asia/Seoul";
 

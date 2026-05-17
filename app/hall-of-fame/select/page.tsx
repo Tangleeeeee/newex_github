@@ -18,7 +18,7 @@ interface Experience {
 export default function HallOfFameSelectPage() {
   const { data: session } = useSession();
   const router = useRouter();
-  const searchParams = useSearchParams();
+  useSearchParams();
   const [pendingItems, setPendingItems] = useState<{ groupId: string; year: number; month: number }[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -38,7 +38,7 @@ export default function HallOfFameSelectPage() {
   useEffect(() => {
     if (!pendingItems[currentIndex] || !session?.user?.id) return;
     const { year, month, groupId } = pendingItems[currentIndex];
-    const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+    void `${year}-${String(month).padStart(2, "0")}-01`;
     fetch(`/api/experiences?groupId=${groupId}`)
       .then((r) => r.json())
       .then((d) => {

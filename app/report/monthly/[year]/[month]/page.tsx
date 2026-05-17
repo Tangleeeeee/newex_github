@@ -10,12 +10,12 @@ import { CATEGORY_LABELS } from "@/lib/constants";
 const COLORS = ["#f59e0b","#1a1f36","#10b981","#3b82f6","#8b5cf6","#ef4444","#f97316","#06b6d4","#64748b"];
 
 export default function MonthlyReportPage({ params }: { params: { year: string; month: string } }) {
-  const { data: session } = useSession();
+  useSession();
   const year = parseInt(params.year);
   const month = parseInt(params.month);
   const [groupId, setGroupId] = useState("");
   const [groups, setGroups] = useState<{ id: string; name: string }[]>([]);
-  const [report, setReport] = useState<any>(null);
+  const [report, setReport] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     fetch("/api/group/my").then((r) => r.json()).then((d) => {
@@ -95,7 +95,7 @@ export default function MonthlyReportPage({ params }: { params: { year: string; 
                   <BarChart data={report.monthlyAvgs} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                     <XAxis dataKey="month" tickFormatter={(v) => `${v}월`} tick={{ fontSize: 11 }} />
                     <YAxis domain={[0, 5]} tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(v: any) => (typeof v === "number" ? v.toFixed(1) : v)} />
+                    <Tooltip formatter={(v: number | string) => (typeof v === "number" ? v.toFixed(1) : v)} />
                     <Bar dataKey="avg" fill="#f59e0b" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>

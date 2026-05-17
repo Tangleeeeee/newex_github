@@ -6,7 +6,6 @@ import Navbar from "@/components/Navbar";
 import ExperienceCard from "@/components/ExperienceCard";
 import { format, addMonths, subMonths } from "date-fns";
 import { ko } from "date-fns/locale";
-import { CATEGORY_LABELS } from "@/lib/constants";
 
 interface CalendarDay { date: string; hasExperience: boolean; isPast: boolean; }
 interface Experience { id: string; title: string; review: string; rating: number; category: string; photoUrl?: string | null; experienceDate: string; }

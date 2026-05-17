@@ -18,7 +18,7 @@ export default function HallOfFamePage() {
   const { data: session } = useSession();
   const [tab, setTab] = useState<"personal" | "group">("personal");
   const [groupId, setGroupId] = useState("");
-  const [groups, setGroups] = useState<{ id: string; name: string }[]>([]);
+  const [, setGroups] = useState<{ id: string; name: string }[]>([]);
   const [personalEntries, setPersonalEntries] = useState<HallOfFameEntry[]>([]);
   const [groupEntries, setGroupEntries] = useState<HallOfFameEntry[]>([]);
   const [year, setYear] = useState(new Date().getFullYear());
