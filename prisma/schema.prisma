@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  username      String    @unique
+  nickname      String?
+  email         String    @unique
+  passwordHash  String?
+  profileImage  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts       Account[]
+  sessions       Session[]
+  groupMembers   GroupMember[]
+  experiences    Experience[]
+  hallOfFames    HallOfFame[]
+  monthlyReports MonthlyReport[]
+  annualReports  AnnualReport[]
+  createdGroups  Group[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  inviteCode  String   @unique
+  createdAt   DateTime @default(now())
+  createdBy   String
+
+  creator        User            @relation(fields: [createdBy], references: [id])
+  members        GroupMember[]
+  experiences    Experience[]
+  monthlyReports MonthlyReport[]
+  hallOfFames    HallOfFame[]
+}
+
+model GroupMember {
+  id       String     @id @default(cuid())
+  groupId  String
+  userId   String
+  joinedAt DateTime   @default(now())
+  role     MemberRole @default(MEMBER)
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+enum MemberRole {
+  OWNER
+  MEMBER
+}
+
+model Experience {
+  id             String   @id @default(cuid())
+  userId         String
+  groupId        String
+  title          String
+  review         String
+  rating         Float
+  category       Category
+  photoUrl       String?
+  experienceDate DateTime @db.Date
+  createdAt      DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  bestHallOfFames  HallOfFame[] @relation("BestExperience")
+  worstHallOfFames HallOfFame[] @relation("WorstExperience")
+  annualReports    AnnualReport[]
+}
+
+enum Category {
+  FOOD
+  TRAVEL
+  SPORTS
+  CULTURE
+  SOCIAL
+  LEARNING
+  NATURE
+  ENTERTAINMENT
+  OTHER
+}
+
+model HallOfFame {
+  id                String   @id @default(cuid())
+  userId            String
+  groupId           String
+  year              Int
+  month             Int
+  bestExperienceId  String
+  worstExperienceId String
+  createdAt         DateTime @default(now())
+
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group           Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  bestExperience  Experience @relation("BestExperience", fields: [bestExperienceId], references: [id])
+  worstExperience Experience @relation("WorstExperience", fields: [worstExperienceId], references: [id])
+
+  @@unique([userId, groupId, year, month])
+}
+
+model MonthlyReport {
+  id            String   @id @default(cuid())
+  userId        String
+  groupId       String
+  year          Int
+  month         Int
+  missedDays    Int
+  averageRating Float
+  generatedAt   DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId, year, month])
+}
+
+model AnnualReport {
+  id               String   @id @default(cuid())
+  userId           String
+  year             Int
+  bestExperienceId String
+  generatedAt      DateTime @default(now())
+
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bestExperience Experience @relation(fields: [bestExperienceId], references: [id])
+
+  @@unique([userId, year])
+}
