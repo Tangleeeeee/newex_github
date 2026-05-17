@@ -1,10 +1,8 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import ExperienceCard from "@/components/ExperienceCard";
 
 interface Experience {
@@ -17,10 +15,9 @@ interface Experience {
   experienceDate: string;
 }
 
-export default function HallOfFameSelectPage() {
+function HallOfFameSelectContent() {
   const { data: session } = useSession();
   const router = useRouter();
-  useSearchParams();
   const [pendingItems, setPendingItems] = useState<{ groupId: string; year: number; month: number }[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -40,14 +37,13 @@ export default function HallOfFameSelectPage() {
   useEffect(() => {
     if (!pendingItems[currentIndex] || !session?.user?.id) return;
     const { year, month, groupId } = pendingItems[currentIndex];
-    void `${year}-${String(month).padStart(2, "0")}-01`;
     fetch(`/api/experiences?groupId=${groupId}`)
       .then((r) => r.json())
       .then((d) => {
         const filtered = (d.experiences ?? []).filter(
           (e: Experience) => {
-            const d = new Date(e.experienceDate);
-            return d.getFullYear() === year && d.getMonth() + 1 === month;
+            const date = new Date(e.experienceDate);
+            return date.getFullYear() === year && date.getMonth() + 1 === month;
           }
         );
         setExperiences(filtered);
@@ -89,7 +85,6 @@ export default function HallOfFameSelectPage() {
           </p>
         </div>
 
-        {/* 최고의 경험 */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg">🏆</span>
@@ -111,7 +106,6 @@ export default function HallOfFameSelectPage() {
           </div>
         </div>
 
-        {/* 최악의 경험 */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg">😓</span>
@@ -145,5 +139,13 @@ export default function HallOfFameSelectPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function HallOfFameSelectPage() {
+  return (
+    <Suspense>
+      <HallOfFameSelectContent />
+    </Suspense>
   );
 }
