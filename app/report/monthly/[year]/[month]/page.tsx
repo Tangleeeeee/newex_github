@@ -65,9 +65,13 @@ export default function MonthlyReportPage({ params }: { params: { year: string; 
                 <p className="text-xs text-gray-400 mt-1">평균 별점</p>
               </div>
               <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm text-center">
-                <p className="text-3xl font-bold text-red-400">{report.missedDays}</p>
+                <p className="text-3xl font-bold text-red-400">{report.missedDays as number}</p>
                 <p className="text-xs text-gray-400 mt-1">미등록 일수</p>
               </div>
+            </div>
+            <div className="bg-red-50 border border-red-100 rounded-2xl p-5 shadow-sm text-center">
+              <p className="text-3xl font-bold text-red-500">{((report.missedDays as number) * 1000).toLocaleString()}원</p>
+              <p className="text-xs text-gray-400 mt-1">이 달 벌금 (1일 미등록 = 1,000원)</p>
             </div>
 
             {/* 명예의 전당 */}

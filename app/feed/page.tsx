@@ -36,6 +36,8 @@ export default function FeedPage() {
   const [hasNoGroup, setHasNoGroup] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showFines, setShowFines] = useState(false);
+  const [fines, setFines] = useState<{ user: { id: string; username: string; nickname?: string | null }; missedDays: number; fine: number }[]>([]);
 
   useEffect(() => {
     fetch("/api/group/my")
@@ -66,6 +68,17 @@ export default function FeedPage() {
   }, [groupId, loadFeed]);
 
   const currentGroup = groups.find((g) => g.id === groupId);
+
+  function handleShowFines() {
+    if (!groupId) return;
+    setShowFines((v) => !v);
+    setShowInvite(false);
+    if (!fines.length) {
+      fetch(`/api/group/fines?groupId=${groupId}`)
+        .then((r) => r.json())
+        .then((d) => setFines(d.fines ?? []));
+    }
+  }
 
   function handleCopyCode() {
     if (!currentGroup) return;
@@ -121,7 +134,14 @@ export default function FeedPage() {
             ))}
           </div>
           <button
-            onClick={() => setShowInvite((v) => !v)}
+            onClick={handleShowFines}
+            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-red-50 hover:border-red-300 hover:text-red-500 transition-all text-sm"
+            title="벌금 현황"
+          >
+            💰
+          </button>
+          <button
+            onClick={() => { setShowInvite((v) => !v); setShowFines(false); }}
             className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-amber-50 hover:border-amber-300 hover:text-amber-600 transition-all"
             title="초대 코드"
           >
@@ -130,6 +150,31 @@ export default function FeedPage() {
             </svg>
           </button>
         </div>
+
+        {/* 벌금 패널 */}
+        {showFines && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-6 shadow-sm animate-slide-up">
+            <h3 className="font-semibold text-navy mb-4">💰 누적 벌금 현황</h3>
+            <div className="space-y-3">
+              {fines.map((f, i) => (
+                <div key={f.user.id} className="flex items-center gap-3">
+                  <span className="text-sm font-bold text-gray-400 w-5">{i + 1}</span>
+                  <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-xs font-bold text-amber-700 shrink-0">
+                    {(f.user.nickname || f.user.username)[0].toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-800">{f.user.nickname || f.user.username}</p>
+                    <p className="text-xs text-gray-400">미등록 {f.missedDays}일</p>
+                  </div>
+                  <p className={`text-sm font-bold ${f.fine > 0 ? "text-red-500" : "text-green-500"}`}>
+                    {f.fine > 0 ? `${f.fine.toLocaleString()}원` : "0원"}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-gray-400 mt-4 text-center">하루 미등록 시 1,000원 부과</p>
+          </div>
+        )}
 
         {/* 초대 코드 패널 */}
         {showInvite && currentGroup && (

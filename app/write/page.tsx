@@ -30,6 +30,7 @@ function WriteForm() {
   const [groupsLoading, setGroupsLoading] = useState(true);
   const [titleValue, setTitleValue] = useState("");
   const [reviewValue, setReviewValue] = useState("");
+  const [editLoading, setEditLoading] = useState(!!editId);
 
   useEffect(() => {
     setGroupsLoading(true);
@@ -56,6 +57,7 @@ function WriteForm() {
   // 수정 모드: 기존 데이터 로드
   useEffect(() => {
     if (!editId) return;
+    setEditLoading(true);
     fetch(`/api/experiences/${editId}`)
       .then((r) => r.json())
       .then((data) => {
@@ -64,7 +66,8 @@ function WriteForm() {
         setRating(data.rating ?? 0);
         setCategory(data.category ?? "");
         if (data.photoUrl) setPhotoPreview(data.photoUrl);
-      });
+      })
+      .finally(() => setEditLoading(false));
   }, [editId]);
 
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -106,7 +109,7 @@ function WriteForm() {
   const today = format(new Date(), "yyyy년 M월 d일 EEEE", { locale: ko });
   const isEditMode = !!editId;
 
-  if (groupsLoading) {
+  if (groupsLoading || editLoading) {
     return (
       <div className="min-h-screen bg-offwhite flex items-center justify-center">
         <p className="text-gray-400 text-sm">불러오는 중...</p>
