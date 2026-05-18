@@ -1,13 +1,29 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
+
+interface MonthEntry { year: number; month: number; }
 
 export default function ReportPage() {
   const router = useRouter();
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
+  const [pastMonths, setPastMonths] = useState<MonthEntry[]>([]);
+
+  useEffect(() => {
+    fetch("/api/report/available-months")
+      .then((r) => r.json())
+      .then((d) => {
+        const currentYM = `${year}-${String(month).padStart(2, "0")}`;
+        const filtered = (d.months ?? []).filter(
+          (m: MonthEntry) => `${m.year}-${String(m.month).padStart(2, "0")}` < currentYM
+        );
+        setPastMonths(filtered);
+      });
+  }, [year, month]);
 
   return (
     <div className="min-h-screen bg-offwhite">
@@ -37,26 +53,23 @@ export default function ReportPage() {
             <p className="text-sm text-gray-400 mt-1">올 한 해의 경험 총정리</p>
           </button>
 
-          <div className="mt-6">
-            <h2 className="text-sm font-semibold text-gray-400 mb-3">지난 달 리포트</h2>
-            <div className="space-y-2">
-              {Array.from({ length: 6 }, (_, i) => {
-                const d = new Date(year, month - 2 - i, 1);
-                const y = d.getFullYear();
-                const m = d.getMonth() + 1;
-                return (
+          {pastMonths.length > 0 && (
+            <div className="mt-6">
+              <h2 className="text-sm font-semibold text-gray-400 mb-3">지난 달 리포트</h2>
+              <div className="space-y-2">
+                {pastMonths.map((m) => (
                   <button
-                    key={i}
-                    onClick={() => router.push(`/report/monthly/${y}/${m}`)}
+                    key={`${m.year}-${m.month}`}
+                    onClick={() => router.push(`/report/monthly/${m.year}/${m.month}`)}
                     className="w-full bg-white rounded-xl border border-gray-100 px-4 py-3 text-left text-sm text-gray-600 hover:bg-gray-50 flex items-center justify-between"
                   >
-                    <span>{y}년 {m}월</span>
+                    <span>{m.year}년 {m.month}월</span>
                     <span className="text-gray-300">›</span>
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
