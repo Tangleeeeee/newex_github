@@ -26,7 +26,7 @@ export default function AnnualReportPage({ params }: { params: { year: string } 
   return (
     <div className="min-h-screen bg-offwhite">
       <Navbar />
-      <div className="pt-20 max-w-lg mx-auto px-4 pb-12">
+      <div className="pt-20 max-w-lg mx-auto px-4 pb-mobile">
         <div className="mb-6">
           <p className="text-sm text-amber-500 font-semibold tracking-widest uppercase mb-1">Annual Report</p>
           <h1 className="font-display text-3xl font-bold text-navy">{year}년</h1>

@@ -22,6 +22,11 @@ body {
   .bg-offwhite { background-color: #f8f7f4; }
   .text-navy { color: #1a1f36; }
   .bg-navy { background-color: #1a1f36; }
+  .pb-mobile { padding-bottom: 5rem; }
+}
+
+@media (min-width: 768px) {
+  .pb-mobile { padding-bottom: 3rem; }
 }
 
 @layer components {

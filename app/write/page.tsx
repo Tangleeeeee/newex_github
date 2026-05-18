@@ -147,7 +147,7 @@ function WriteForm() {
   return (
     <div className="min-h-screen bg-offwhite">
       <Navbar />
-      <div className="max-w-lg mx-auto px-4 pt-20 pb-12">
+      <div className="max-w-lg mx-auto px-4 pt-20 pb-mobile">
         <div className="mb-8">
           <p className="text-sm text-amber-500 font-semibold tracking-widest uppercase mb-1">
             {isEditMode ? "Edit" : "Today"}

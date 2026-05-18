@@ -29,7 +29,7 @@ export default function GroupCreatePage() {
   return (
     <div className="min-h-screen bg-offwhite">
       <Navbar />
-      <div className="pt-20 max-w-md mx-auto px-4 pb-12">
+      <div className="pt-20 max-w-md mx-auto px-4 pb-mobile">
         <div className="mb-8">
           <h1 className="font-display text-3xl font-bold text-navy">그룹 만들기</h1>
           <p className="text-sm text-gray-400 mt-1">친구들과 함께할 그룹을 만들어요</p>

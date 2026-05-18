@@ -28,7 +28,7 @@ export default function ReportPage() {
   return (
     <div className="min-h-screen bg-offwhite">
       <Navbar />
-      <div className="pt-20 max-w-lg mx-auto px-4 pb-12">
+      <div className="pt-20 max-w-lg mx-auto px-4 pb-mobile">
         <div className="mb-8">
           <p className="text-sm text-amber-500 font-semibold tracking-widest uppercase mb-1">Reports</p>
           <h1 className="font-display text-3xl font-bold text-navy">리포트</h1>

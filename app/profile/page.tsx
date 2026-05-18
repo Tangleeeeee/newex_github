@@ -56,7 +56,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-offwhite">
       <Navbar />
-      <div className="pt-20 max-w-lg mx-auto px-4 pb-12">
+      <div className="pt-20 max-w-lg mx-auto px-4 pb-mobile">
         {/* 프로필 헤더 */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6 shadow-sm">
           <div className="flex items-center gap-4">

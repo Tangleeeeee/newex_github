@@ -29,7 +29,7 @@ export default function GroupJoinPage() {
   return (
     <div className="min-h-screen bg-offwhite">
       <Navbar />
-      <div className="pt-20 max-w-md mx-auto px-4 pb-12">
+      <div className="pt-20 max-w-md mx-auto px-4 pb-mobile">
         <div className="mb-8">
           <h1 className="font-display text-3xl font-bold text-navy">그룹 참여</h1>
           <p className="text-sm text-gray-400 mt-1">초대 코드를 입력해 그룹에 참여하세요</p>

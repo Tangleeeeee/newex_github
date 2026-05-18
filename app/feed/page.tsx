@@ -116,7 +116,7 @@ export default function FeedPage() {
   return (
     <div className="min-h-screen bg-offwhite">
       <Navbar />
-      <div className="pt-20 max-w-lg mx-auto px-4 pb-12">
+      <div className="pt-20 max-w-lg mx-auto px-4 pb-mobile">
 
         {/* 그룹 탭 + 초대 코드 버튼 */}
         <div className="flex items-center gap-2 mb-6">
