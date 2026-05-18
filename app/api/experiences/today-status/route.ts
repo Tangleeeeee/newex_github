@@ -34,6 +34,7 @@ export async function GET(req: Request) {
 
   return NextResponse.json({
     hasRegisteredToday: !!myExperience,
+    todayExperienceId: myExperience?.id ?? null,
     totalMembers,
     registeredCount,
     members: members.map((m) => ({

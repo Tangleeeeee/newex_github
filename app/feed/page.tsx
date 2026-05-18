@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import ExperienceCard from "@/components/ExperienceCard";
 import { format } from "date-fns";
@@ -25,7 +26,8 @@ interface Group {
 }
 
 export default function FeedPage() {
-  useSession();
+  const { data: session } = useSession();
+  const router = useRouter();
   const [groupId, setGroupId] = useState("");
   const [groups, setGroups] = useState<Group[]>([]);
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -158,9 +160,22 @@ export default function FeedPage() {
               {date}
             </h2>
             <div className="space-y-4">
-              {exps.map((exp) => (
-                <ExperienceCard key={exp.id} experience={exp} />
-              ))}
+              {exps.map((exp) => {
+                const isToday = format(new Date(exp.experienceDate), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
+                const isMyExp = exp.user?.id === session?.user?.id;
+                return (
+                  <div
+                    key={exp.id}
+                    onClick={isToday && isMyExp ? () => router.push(`/write?edit=${exp.id}`) : undefined}
+                    className={isToday && isMyExp ? "cursor-pointer relative" : ""}
+                  >
+                    {isToday && isMyExp && (
+                      <span className="absolute top-3 right-3 z-10 text-xs bg-amber-400 text-navy font-semibold px-2 py-0.5 rounded-full">수정 가능</span>
+                    )}
+                    <ExperienceCard experience={exp} />
+                  </div>
+                );
+              })}
             </div>
           </div>
         ))}

@@ -1,19 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import StarRating from "@/components/StarRating";
 import { CATEGORIES, CATEGORY_LABELS } from "@/lib/constants";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import Navbar from "@/components/Navbar";
 
-export default function WritePage() {
+function WriteForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
+
   const [groupId, setGroupId] = useState("");
   const [groups, setGroups] = useState<{ id: string; name: string }[]>([]);
   const [todayStatus, setTodayStatus] = useState<{
     hasRegisteredToday: boolean;
+    todayExperienceId: string | null;
     totalMembers: number;
     registeredCount: number;
   } | null>(null);
@@ -24,6 +28,8 @@ export default function WritePage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [groupsLoading, setGroupsLoading] = useState(true);
+  const [titleValue, setTitleValue] = useState("");
+  const [reviewValue, setReviewValue] = useState("");
 
   useEffect(() => {
     setGroupsLoading(true);
@@ -47,6 +53,20 @@ export default function WritePage() {
       .then(setTodayStatus);
   }, [groupId]);
 
+  // 수정 모드: 기존 데이터 로드
+  useEffect(() => {
+    if (!editId) return;
+    fetch(`/api/experiences/${editId}`)
+      .then((r) => r.json())
+      .then((data) => {
+        setTitleValue(data.title ?? "");
+        setReviewValue(data.review ?? "");
+        setRating(data.rating ?? 0);
+        setCategory(data.category ?? "");
+        if (data.photoUrl) setPhotoPreview(data.photoUrl);
+      });
+  }, [editId]);
+
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -63,16 +83,18 @@ export default function WritePage() {
     setError("");
     if (rating === 0) { setError("별점을 선택해주세요."); return; }
     if (!category) { setError("카테고리를 선택해주세요."); return; }
-    if (!groupId) { setError("그룹을 선택해주세요."); return; }
+    if (!groupId && !editId) { setError("그룹을 선택해주세요."); return; }
 
     setLoading(true);
     const form = new FormData(e.currentTarget);
     form.set("rating", String(rating));
     form.set("category", category);
-    form.set("groupId", groupId);
+    if (!editId) form.set("groupId", groupId);
     if (photo) form.set("photo", photo);
 
-    const res = await fetch("/api/experiences", { method: "POST", body: form });
+    const url = editId ? `/api/experiences/${editId}` : "/api/experiences";
+    const method = editId ? "PATCH" : "POST";
+    const res = await fetch(url, { method, body: form });
     const data = await res.json();
     setLoading(false);
 
@@ -82,6 +104,7 @@ export default function WritePage() {
   }
 
   const today = format(new Date(), "yyyy년 M월 d일 EEEE", { locale: ko });
+  const isEditMode = !!editId;
 
   if (groupsLoading) {
     return (
@@ -91,8 +114,8 @@ export default function WritePage() {
     );
   }
 
-  // 오늘 이미 등록한 경우
-  if (todayStatus?.hasRegisteredToday) {
+  // 오늘 이미 등록했고 수정 모드가 아닌 경우
+  if (todayStatus?.hasRegisteredToday && !isEditMode) {
     return (
       <div className="min-h-screen bg-offwhite">
         <Navbar />
@@ -100,9 +123,19 @@ export default function WritePage() {
           <p className="text-5xl mb-4">✅</p>
           <h2 className="text-xl font-bold text-navy mb-2">오늘의 경험을 이미 등록했어요!</h2>
           <p className="text-sm text-gray-400 mb-6">내일 또 새로운 경험을 기록해보세요.</p>
-          <button onClick={() => router.push("/feed")} className="btn-primary">
-            피드로 돌아가기
-          </button>
+          <div className="flex flex-col gap-3 max-w-xs mx-auto">
+            {todayStatus.todayExperienceId && (
+              <button
+                onClick={() => router.push(`/write?edit=${todayStatus.todayExperienceId}`)}
+                className="btn-primary"
+              >
+                오늘 기록 수정하기
+              </button>
+            )}
+            <button onClick={() => router.push("/feed")} className="px-4 py-2 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50">
+              피드로 돌아가기
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -113,23 +146,23 @@ export default function WritePage() {
       <Navbar />
       <div className="max-w-lg mx-auto px-4 pt-20 pb-12">
         <div className="mb-8">
-          <p className="text-sm text-amber-500 font-semibold tracking-widest uppercase mb-1">Today</p>
-          <h1 className="font-display text-3xl font-bold text-navy">{today}</h1>
-          {todayStatus && (
+          <p className="text-sm text-amber-500 font-semibold tracking-widest uppercase mb-1">
+            {isEditMode ? "Edit" : "Today"}
+          </p>
+          <h1 className="font-display text-3xl font-bold text-navy">
+            {isEditMode ? "오늘 기록 수정" : today}
+          </h1>
+          {!isEditMode && todayStatus && (
             <p className="mt-2 text-sm text-gray-500">
               팀원 {todayStatus.totalMembers}명 중 {todayStatus.registeredCount}명 등록 완료 ✓
             </p>
           )}
         </div>
 
-        {groups.length > 1 && (
+        {!isEditMode && groups.length > 1 && (
           <div className="mb-5">
             <label className="label">그룹 선택</label>
-            <select
-              value={groupId}
-              onChange={(e) => setGroupId(e.target.value)}
-              className="input-field"
-            >
+            <select value={groupId} onChange={(e) => setGroupId(e.target.value)} className="input-field">
               {groups.map((g) => (
                 <option key={g.id} value={g.id}>{g.name}</option>
               ))}
@@ -147,6 +180,8 @@ export default function WritePage() {
               placeholder="어떤 새로운 경험을 했나요?"
               className="input-field"
               maxLength={100}
+              value={titleValue}
+              onChange={(e) => setTitleValue(e.target.value)}
             />
           </div>
 
@@ -187,6 +222,8 @@ export default function WritePage() {
               rows={2}
               placeholder="한 문장으로 오늘의 경험을 표현해주세요"
               className="input-field resize-none"
+              value={reviewValue}
+              onChange={(e) => setReviewValue(e.target.value)}
             />
           </div>
 
@@ -221,15 +258,34 @@ export default function WritePage() {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full text-base py-3.5"
-          >
-            {loading ? "등록 중..." : "경험 등록하기"}
-          </button>
+          <div className="flex gap-3">
+            {isEditMode && (
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="flex-1 px-4 py-3.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50"
+              >
+                취소
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary flex-1 text-base py-3.5"
+            >
+              {loading ? (isEditMode ? "수정 중..." : "등록 중...") : (isEditMode ? "수정 완료" : "경험 등록하기")}
+            </button>
+          </div>
         </form>
       </div>
     </div>
+  );
+}
+
+export default function WritePage() {
+  return (
+    <Suspense>
+      <WriteForm />
+    </Suspense>
   );
 }
