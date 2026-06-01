@@ -6,6 +6,8 @@ import { getTodayKST } from "@/lib/dateUtils";
 import { format, eachDayOfInterval, max } from "date-fns";
 
 const FINE_START_DATE = new Date("2026-05-18T00:00:00.000Z");
+// 버그로 인해 경험 입력 불가했던 날짜 (벌금 면제)
+const GRACE_DAYS = new Set(["2026-05-30"]);
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
@@ -58,9 +60,10 @@ export async function GET(req: Request) {
     }
 
     const days = eachDayOfInterval({ start: startDate, end: yesterdayDate });
-    const missedDays = days.filter(
-      (d) => !expSet.has(`${m.userId}-${format(d, "yyyy-MM-dd")}`)
-    ).length;
+    const missedDays = days.filter((d) => {
+      const ds = format(d, "yyyy-MM-dd");
+      return !expSet.has(`${m.userId}-${ds}`) && !GRACE_DAYS.has(ds);
+    }).length;
 
     return {
       user: m.user,

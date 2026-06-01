@@ -31,10 +31,11 @@ export async function GET(
   const today = format(new Date(), "yyyy-MM-dd");
   const registeredDates = new Set(experiences.map((e) => format(e.experienceDate, "yyyy-MM-dd")));
   const FINE_START = "2026-05-18";
+  const GRACE_DAYS = new Set(["2026-05-30"]);
 
   const missedDays = monthDays.filter((d) => {
     const ds = format(d, "yyyy-MM-dd");
-    return ds <= today && ds >= FINE_START && !registeredDates.has(ds);
+    return ds <= today && ds >= FINE_START && !registeredDates.has(ds) && !GRACE_DAYS.has(ds);
   }).length;
 
   const averageRating =
