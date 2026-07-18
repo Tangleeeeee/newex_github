@@ -18,54 +18,53 @@ export async function GET() {
     select: { groupId: true },
   });
 
-  const pendingItems: { groupId: string; year: number; month: number }[] = [];
+  const { year, month } = getCurrentYearMonth();
+  const prevMonth = month === 1 ? 12 : month - 1;
+  const prevYear = month === 1 ? year - 1 : year;
 
-  for (const { groupId } of groups) {
-    const { year, month } = getCurrentYearMonth();
-
-    // 이번 달 등록한 경험이 있고, 명예의 전당 미선택이면
-    const hasExperiences = await prisma.experience.count({
-      where: {
-        userId: session.user.id,
-        groupId,
-        experienceDate: {
-          gte: new Date(`${year}-${String(month).padStart(2, "0")}-01T00:00:00.000Z`),
-          lt: new Date(year, month, 1),
-        },
-      },
-    });
-
-    if (hasExperiences > 0) {
-      const existing = await prisma.hallOfFame.findUnique({
-        where: { userId_groupId_year_month: { userId: session.user.id, groupId, year, month } },
-      });
-      if (!existing && lastDay) {
-        pendingItems.push({ groupId, year, month });
-      }
-    }
-
-    // 이전 달 미선택 확인 (로그인 안 했다가 다음달에 로그인하는 경우)
-    const prevMonth = month === 1 ? 12 : month - 1;
-    const prevYear = month === 1 ? year - 1 : year;
-    const prevExisting = await prisma.hallOfFame.findUnique({
-      where: { userId_groupId_year_month: { userId: session.user.id, groupId, year: prevYear, month: prevMonth } },
-    });
-    if (!prevExisting) {
-      const prevHasExperiences = await prisma.experience.count({
-        where: {
-          userId: session.user.id,
-          groupId,
-          experienceDate: {
-            gte: new Date(`${prevYear}-${String(prevMonth).padStart(2, "0")}-01T00:00:00.000Z`),
-            lt: new Date(prevYear, prevMonth, 1),
+  const perGroupPending = await Promise.all(
+    groups.map(async ({ groupId }) => {
+      const [hasExperiences, existing, prevHasExperiences, prevExisting] = await Promise.all([
+        prisma.experience.count({
+          where: {
+            userId: session.user.id,
+            groupId,
+            experienceDate: {
+              gte: new Date(`${year}-${String(month).padStart(2, "0")}-01T00:00:00.000Z`),
+              lt: new Date(year, month, 1),
+            },
           },
-        },
-      });
-      if (prevHasExperiences > 0) {
-        pendingItems.push({ groupId, year: prevYear, month: prevMonth });
+        }),
+        prisma.hallOfFame.findUnique({
+          where: { userId_groupId_year_month: { userId: session.user.id, groupId, year, month } },
+        }),
+        prisma.experience.count({
+          where: {
+            userId: session.user.id,
+            groupId,
+            experienceDate: {
+              gte: new Date(`${prevYear}-${String(prevMonth).padStart(2, "0")}-01T00:00:00.000Z`),
+              lt: new Date(prevYear, prevMonth, 1),
+            },
+          },
+        }),
+        prisma.hallOfFame.findUnique({
+          where: { userId_groupId_year_month: { userId: session.user.id, groupId, year: prevYear, month: prevMonth } },
+        }),
+      ]);
+
+      const items: { groupId: string; year: number; month: number }[] = [];
+      if (hasExperiences > 0 && !existing && lastDay) {
+        items.push({ groupId, year, month });
       }
-    }
-  }
+      if (prevHasExperiences > 0 && !prevExisting) {
+        items.push({ groupId, year: prevYear, month: prevMonth });
+      }
+      return items;
+    })
+  );
+
+  const pendingItems = perGroupPending.flat();
 
   return NextResponse.json({ pending: pendingItems.length > 0, items: pendingItems });
 }
