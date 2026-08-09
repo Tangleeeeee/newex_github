@@ -1,3 +1,6 @@
 {
-  "regions": ["sin1"]
+  "regions": ["sin1"],
+  "crons": [
+    { "path": "/api/cron/midnight-reminder", "schedule": "0 15 * * *" }
+  ]
 }

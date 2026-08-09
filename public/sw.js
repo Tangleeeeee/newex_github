@@ -1,4 +1,4 @@
-const CACHE_NAME = "newex-shell-v1";
+const CACHE_NAME = "newex-shell-v2";
 const APP_SHELL = ["/", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
@@ -18,6 +18,38 @@ self.addEventListener("activate", (event) => {
       .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
   );
   self.clients.claim();
+});
+
+self.addEventListener("push", (event) => {
+  let data = { title: "newex", body: "오늘의 경험을 기록해주세요", url: "/write" };
+  try {
+    if (event.data) data = { ...data, ...event.data.json() };
+  } catch {
+    // no-op: payload가 JSON이 아니면 기본값 사용
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: "/icon-192",
+      badge: "/icon-192",
+      data: { url: data.url },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url ?? "/write";
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if (client.url.includes(targetUrl) && "focus" in client) return client.focus();
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
+    })
+  );
 });
 
 self.addEventListener("fetch", (event) => {

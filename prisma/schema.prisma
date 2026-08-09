@@ -3,8 +3,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // migrate/db push 용. pgbouncer 트랜잭션 풀링(6543)은 어드바이저리 락을 못 잡아 멈추므로
+  // 세션 풀링(5432) 혹은 direct 커넥션을 사용해야 함.
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -25,6 +28,7 @@ model User {
   monthlyReports MonthlyReport[]
   annualReports  AnnualReport[]
   createdGroups  Group[]
+  pushSubscriptions PushSubscription[]
 }
 
 model Account {
@@ -166,6 +170,17 @@ model MonthlyReport {
   group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@unique([userId, groupId, year, month])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model AnnualReport {

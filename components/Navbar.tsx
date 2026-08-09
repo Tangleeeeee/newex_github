@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
+import NotificationBell from "./NotificationBell";
 
 const navItems = [
   {
@@ -82,6 +83,7 @@ export default function Navbar() {
 
           {/* 프로필 + 로그아웃 */}
           <div className="flex items-center gap-2 shrink-0">
+            <NotificationBell />
             {avatar}
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
