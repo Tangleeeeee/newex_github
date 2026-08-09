@@ -5,7 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { getTodayKST } from "@/lib/dateUtils";
 import { format, eachDayOfInterval, max } from "date-fns";
 
-const FINE_START_DATE = new Date("2026-05-18T00:00:00.000Z");
+// 2026-08-09 에 그동안 쌓인 벌금을 전부 초기화 — 이 날짜 이전 미등록 이력은 계산에서 제외
+const FINE_START_DATE = new Date("2026-08-09T00:00:00.000Z");
 // 버그로 인해 경험 입력 불가했던 날짜 (벌금 면제)
 const GRACE_DAYS = new Set(["2026-05-30"]);
 
