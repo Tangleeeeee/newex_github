@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 const PUBLIC_PATHS = ["/login", "/reset-password"];
+const PWA_ASSET_PATHS = ["/manifest.webmanifest", "/sw.js", "/icon-192", "/icon-512", "/apple-icon"];
 const API_PREFIX = "/api";
 const WRITE_PATH = "/write";
 const HOF_SELECT_PATH = "/hall-of-fame/select";
@@ -11,12 +12,13 @@ const GROUP_SETUP_PATH = "/group/setup";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 정적 파일, API, 공개 경로는 통과
+  // 정적 파일, API, 공개 경로, PWA 자산(매니페스트/아이콘/서비스워커)은 통과
   if (
     pathname.startsWith(API_PREFIX) ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
-    PUBLIC_PATHS.some((p) => pathname.startsWith(p))
+    PUBLIC_PATHS.some((p) => pathname.startsWith(p)) ||
+    PWA_ASSET_PATHS.some((p) => pathname.startsWith(p))
   ) {
     return NextResponse.next();
   }

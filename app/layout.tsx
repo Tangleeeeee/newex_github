@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { RegisterServiceWorker } from "./register-sw";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -13,6 +14,15 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: "newex — 매일 새로운 경험",
   description: "하루에 하나씩, 안 해봤던 새로운 경험을 기록하세요.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "newex",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1a1f36",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -28,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${fraunces.variable} font-sans antialiased bg-offwhite min-h-screen`}>
         <Providers>{children}</Providers>
+        <RegisterServiceWorker />
       </body>
     </html>
   );
